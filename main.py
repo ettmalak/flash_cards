@@ -1,5 +1,5 @@
 from tkinter import *
-import pandas, random
+import pandas, random, os
 import time
 
 BACKGROUND_COLOR = "#B1DDC6"
@@ -10,7 +10,11 @@ window = Tk()
 window.title("Flash Cards")
 window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
 
-data = pandas.read_csv("data/french_words.csv")
+
+if os.path.exists("data/words_to_learn"):
+    data = pandas.read_csv("data/words_to_learn")
+else:
+    data = pandas.read_csv("data/french_words.csv")
 to_learn = data.to_dict(orient="records")
 
 
@@ -34,6 +38,13 @@ def pick_new_word():
     canvas.itemconfig(canvas_image, image=card_front)
     flip_timer=window.after(3000, show_english)
 
+def known_word():
+    global current_card
+    to_learn.remove(current_card)
+    pandas.DataFrame(to_learn).to_csv("data/words_to_learn.csv", index=False)
+    pick_new_word()
+
+
 def show_english():
     canvas.itemconfig(canvas_image, image=card_back)
     canvas.itemconfig(card_title, text="English", fill="white")
@@ -47,7 +58,7 @@ unknown_button.grid(row=1, column=0)
 unknown_button.config(background=BACKGROUND_COLOR, highlightthickness=0)
 
 check_image = PhotoImage(file="images/right.png")
-known_button = Button(image=check_image, command=pick_new_word)
+known_button = Button(image=check_image, command=known_word)
 known_button.grid(row=1, column=1)
 known_button.config(background=BACKGROUND_COLOR, highlightthickness=0)
 
